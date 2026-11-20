@@ -75,6 +75,33 @@ for (const [sourceRel] of pairs) {
     if (!isFile(sourcePath)) fail(`entry source not found at ${sourcePath}`)
 }
 
+const buildEntry = ([sourceRel, outName]) => {
+    const shared = {
+        outfile: join(scriptsDir, outName),
+        bundle: true,
+        define: { __LUMO_CONNECTOR_ICONS__: JSON.stringify(connectorIcons) },
+        format: 'iife',
+        target: 'es2020',
+        logLevel: 'warning',
+    }
+    if (sourceRel !== 'pages/settings/index.js') {
+        return build({ ...shared, entryPoints: [join(srcDir, sourceRel)] })
+    }
+    // The settings page is one frozen script; append connector-specific helpers so a
+    // built-in can share its modal logic without growing the frozen file.
+    const sourcePath = join(srcDir, sourceRel)
+    return build({
+        ...shared,
+        stdin: {
+            contents: readFileSync(sourcePath, 'utf8') + '\n'
+                + readFileSync(join(srcDir, 'pages/settings/browser-modal.js'), 'utf8'),
+            loader: 'js',
+            resolveDir: dirname(sourcePath),
+            sourcefile: sourceRel,
+        },
+    })
+}
+
 mkdirSync(outDir, { recursive: true })
 const staticEntries = readdirSync(staticDir).filter((name) => name !== '.DS_Store')
 for (const name of [...staticEntries, 'scripts']) {
@@ -88,19 +115,7 @@ for (const name of staticEntries) {
 }
 
 try {
-    await Promise.all(
-        pairs.map(([sourceRel, outName]) =>
-            build({
-                entryPoints: [join(srcDir, sourceRel)],
-                outfile: join(scriptsDir, outName),
-                bundle: true,
-                define: { __LUMO_CONNECTOR_ICONS__: JSON.stringify(connectorIcons) },
-                format: 'iife',
-                target: 'es2020',
-                logLevel: 'warning',
-            })
-        )
-    )
+    await Promise.all(pairs.map(buildEntry))
 } catch {
     fail('esbuild failed')
 }
