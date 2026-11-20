@@ -2,9 +2,12 @@
  * Shapes crossing the connector boundary.
  *
  * Mirrors `ConnectorManifest`, `ToolDefinition`, `Readiness`, `Activity`, `ConnectorStatus`,
- * `AuthMechanism` and `ToolPolicy` in
- * src-tauri/src/tools/. Nothing verifies the two stay in step, so a field renamed in Rust
- * shows up as a runtime failure, not a type error.
+ * `AuthMechanism` and `ToolPolicy` in src-tauri/src/tools/.
+ *
+ * `connector-contract.json` in this directory is the wire contract both sides are checked
+ * against: `cargo test --features test-utils` serializes the Rust types, and
+ * `npm run check:contract` compares these declarations with it. Change a field here and update
+ * the contract, or the check fails before the mismatch reaches a runtime call.
  */
 import type { ConnectorCatalogEntry, ConnectorCategory, ConnectorCategoryId } from '../shared/connector-catalog';
 
@@ -36,7 +39,7 @@ export type ToolPolicy = 'auto_approve' | 'ask' | 'disable';
 
 /** `AuthMechanism`, internally tagged on `type`. Only the tag is modelled; the bridge reads nothing else. */
 export type AuthMechanism = {
-  type: 'none' | 'api_key' | 'bearer_token' | 'oauth2' | 'mcp_server';
+  type: 'none' | 'api_key' | 'bearer_token' | 'oauth2' | 'mcp_server' | 'proton_bridge' | 'luminance';
   [key: string]: unknown;
 };
 
@@ -48,6 +51,8 @@ export type ToolDefinition = {
   policy?: ToolPolicy;
   /** Unknown when absent. Only explicit true is eligible for read-only scheduled access. */
   read_only?: boolean;
+  /** An MCP `openWorldHint`; unknown when absent, which the gate treats as open. */
+  open_world?: boolean;
 };
 
 /**

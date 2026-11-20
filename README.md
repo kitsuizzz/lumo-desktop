@@ -164,9 +164,17 @@ Sign-in is required to use the app. Proton developers can use dev accounts on th
 ## Testing
 
 ```bash
-npm run typecheck                                                       # TypeScript
+npm run typecheck                                                       # TypeScript + connector contract
 cargo test --manifest-path src-tauri/Cargo.toml --features test-utils   # Rust unit and integration tests
 ```
+
+`webview/types/connector-contract.json` is the wire contract for connector types that cross the
+Tauri IPC boundary. `webview/types/index.ts` mirrors those shapes by hand, so both sides are
+checked against the JSON file: `npm run check:contract` compares the TypeScript declarations
+(`npm run typecheck` runs it too, as does the pre-push hook), and the Rust tests in
+`src-tauri/src/tools/contract.rs` serialize representative values and compare their keys. After
+renaming or removing a field in Rust or TypeScript, update `connector-contract.json` in the same
+change; otherwise one of the two commands fails.
 
 ### End-to-end tests
 

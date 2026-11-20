@@ -5,6 +5,8 @@ pub mod command_path;
 pub mod commands;
 pub mod connector_state;
 pub mod connectors;
+#[cfg(test)]
+mod contract;
 pub mod error;
 mod exposure;
 mod hidden_text;
