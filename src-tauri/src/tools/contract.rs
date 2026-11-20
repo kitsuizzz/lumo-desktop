@@ -292,7 +292,7 @@ fn auth_mechanisms_match_contract() {
         AuthMechanism::Luminance {
             config: Some(LuminanceInfo {
                 instance_url: "https://luminance.example.test".into(),
-                auth: "token".into(),
+                auth: "sample".into(),
             }),
         },
         AuthMechanism::Luminance { config: None },
@@ -341,12 +341,12 @@ fn command_shapes_match_contract() {
             authorize_params: HashMap::from([("access_type".into(), "offline".into())]),
         },
         HttpAuth::Token {
-            scheme: "Bearer".into(),
+            scheme: "Sample".into(),
         },
         HttpAuth::Headers {
             headers: vec![CustomHeader {
                 name: "Authorization".into(),
-                prefix: "Bearer ".into(),
+                prefix: "Sample ".into(),
             }],
         },
         HttpAuth::None,
