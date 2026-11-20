@@ -1,5 +1,4 @@
 pub mod bash;
-#[allow(dead_code)] // Retained for future use; not registered.
 pub mod browser;
 pub mod echo;
 pub mod filesystem;
@@ -8,6 +7,7 @@ pub mod mcp;
 pub mod proton_mail;
 
 pub use bash::BashConnector;
+pub use browser::BrowserConnector;
 pub use filesystem::FilesystemConnector;
 pub use luminance::LuminanceConnector;
 pub use mcp::{
