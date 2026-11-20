@@ -1,0 +1,240 @@
+{
+  "$comment": "Wire contract for the connector types that cross the Tauri IPC boundary. This file is the single source of truth checked from both sides: src-tauri/src/tools/contract.rs asserts representative Rust values serialize to these shapes, and scripts/check-connector-contract.mjs asserts webview/types/index.ts declares the matching TypeScript shapes. Run `npm run check:contract` or `cargo test --manifest-path src-tauri/Cargo.toml --features test-utils` after changing a connector type. Field names are serde wire names, not Rust identifiers.",
+  "version": 1,
+  "types": {
+    "ToolPolicy": {
+      "kind": "string_enum",
+      "values": ["auto_approve", "ask", "disable"],
+      "ts": { "name": "ToolPolicy" }
+    },
+    "Readiness": {
+      "kind": "tagged_union",
+      "tag": "state",
+      "variants": {
+        "ready": {},
+        "blocked": {
+          "reason": { "kind": "scalar", "type": "string" }
+        }
+      },
+      "ts": { "name": "Readiness" }
+    },
+    "Activity": {
+      "kind": "tagged_union",
+      "tag": "state",
+      "variants": {
+        "untried": {},
+        "succeeded": {},
+        "failed": {
+          "error": { "kind": "scalar", "type": "string" }
+        }
+      },
+      "ts": { "name": "Activity" }
+    },
+    "ConnectorStatus": {
+      "kind": "tagged_union",
+      "tag": "state",
+      "variants": {
+        "ready": {},
+        "warning": {
+          "error": { "kind": "scalar", "type": "string" }
+        },
+        "not_ready": {
+          "reason": { "kind": "scalar", "type": "string" }
+        }
+      },
+      "ts": { "name": "ConnectorStatus" }
+    },
+    "Capabilities": {
+      "kind": "object",
+      "fields": {
+        "credentials": { "kind": "scalar", "type": "boolean" },
+        "session": { "kind": "scalar", "type": "boolean" }
+      },
+      "ts": { "name": "Capabilities" }
+    },
+    "LuminanceInfo": {
+      "kind": "object",
+      "fields": {
+        "instance_url": { "kind": "scalar", "type": "string" },
+        "auth": { "kind": "scalar", "type": "string" }
+      }
+    },
+    "ProtonBridgeInfo": {
+      "kind": "object",
+      "fields": {
+        "imap_port": { "kind": "scalar", "type": "number" },
+        "smtp_port": { "kind": "scalar", "type": "number" },
+        "username": { "kind": "scalar", "type": "string" },
+        "imap_security": { "kind": "scalar", "type": "string" },
+        "smtp_security": { "kind": "scalar", "type": "string" }
+      }
+    },
+    "McpTransportInfo": {
+      "kind": "tagged_union",
+      "tag": "transport",
+      "variants": {
+        "stdio": {
+          "command": { "kind": "scalar", "type": "string" },
+          "args": { "kind": "array", "items": { "kind": "scalar", "type": "string" } },
+          "env": { "kind": "map", "values": { "kind": "scalar", "type": "string" } },
+          "secret_env": { "kind": "array", "items": { "kind": "scalar", "type": "string" } }
+        },
+        "http": {
+          "url": { "kind": "scalar", "type": "string" }
+        }
+      }
+    },
+    "AuthMechanism": {
+      "kind": "tagged_union",
+      "tag": "type",
+      "ts_style": "open_tagged",
+      "variants": {
+        "none": {},
+        "api_key": {
+          "env_var": { "kind": "scalar", "type": "string" }
+        },
+        "bearer_token": {
+          "source": { "kind": "any" }
+        },
+        "oauth2": {
+          "client_id_env": { "kind": "scalar", "type": "string" },
+          "client_secret_env": { "kind": "scalar", "type": "string" },
+          "auth_url": { "kind": "scalar", "type": "string" },
+          "token_url": { "kind": "scalar", "type": "string" },
+          "scopes": { "kind": "array", "items": { "kind": "scalar", "type": "string" } },
+          "redirect_port": { "kind": "scalar", "type": "number" }
+        },
+        "mcp_server": {
+          "transport": { "kind": "ref", "ref": "McpTransportInfo" }
+        },
+        "proton_bridge": {
+          "config": { "kind": "ref", "ref": "ProtonBridgeInfo", "optional": true }
+        },
+        "luminance": {
+          "config": { "kind": "ref", "ref": "LuminanceInfo", "optional": true }
+        }
+      },
+      "ts": { "name": "AuthMechanism" }
+    },
+    "ToolDefinition": {
+      "kind": "object",
+      "fields": {
+        "name": { "kind": "scalar", "type": "string" },
+        "title": { "kind": "scalar", "type": "string", "optional": true },
+        "description": { "kind": "scalar", "type": "string" },
+        "input_schema": { "kind": "any" },
+        "read_only": { "kind": "scalar", "type": "boolean", "optional": true },
+        "open_world": { "kind": "scalar", "type": "boolean", "optional": true },
+        "policy": { "kind": "ref", "ref": "ToolPolicy" }
+      },
+      "ts": { "name": "ToolDefinition" }
+    },
+    "ConnectorManifest": {
+      "kind": "object",
+      "fields": {
+        "id": { "kind": "scalar", "type": "string" },
+        "display_name": { "kind": "scalar", "type": "string" },
+        "description": { "kind": "scalar", "type": "string", "optional": true },
+        "version": { "kind": "scalar", "type": "string" },
+        "icon": { "kind": "scalar", "type": "string", "nullable": true },
+        "auth": { "kind": "ref", "ref": "AuthMechanism" },
+        "capabilities": { "kind": "ref", "ref": "Capabilities" },
+        "tools": { "kind": "array", "items": { "kind": "ref", "ref": "ToolDefinition" } },
+        "always_allowed": {
+          "kind": "array",
+          "items": { "kind": "scalar", "type": "string" },
+          "optional": true
+        },
+        "enabled": { "kind": "scalar", "type": "boolean" },
+        "readiness": { "kind": "ref", "ref": "Readiness" },
+        "activity": { "kind": "ref", "ref": "Activity", "nullable": true },
+        "status": { "kind": "ref", "ref": "ConnectorStatus" }
+      },
+      "ts": {
+        "name": "ConnectorManifest",
+        "extra_fields": ["category", "server_id", "url"]
+      }
+    },
+    "ApprovalReason": {
+      "kind": "object",
+      "fields": {
+        "kind": {
+          "kind": "string_enum",
+          "values": ["untrusted_content", "untrusted_write", "hidden_text"]
+        },
+        "sources": {
+          "kind": "array",
+          "items": {
+            "kind": "string_enum",
+            "values": ["mail", "web", "shell", "service", "connector"]
+          }
+        },
+        "destination": { "kind": "scalar", "type": "string", "optional": true }
+      },
+      "ts": { "name": "ToolApprovalReason" }
+    },
+    "ScheduleToolContext": {
+      "kind": "object",
+      "fields": {
+        "connectionId": { "kind": "scalar", "type": "string" },
+        "runId": { "kind": "scalar", "type": "string" }
+      },
+      "ts": { "name": "ScheduleToolContext" }
+    },
+    "CustomHeader": {
+      "kind": "object",
+      "fields": {
+        "name": { "kind": "scalar", "type": "string" },
+        "prefix": { "kind": "scalar", "type": "string" }
+      }
+    },
+    "HttpAuth": {
+      "kind": "tagged_union",
+      "tag": "type",
+      "variants": {
+        "oauth": {
+          "scopes": { "kind": "array", "items": { "kind": "scalar", "type": "string" } },
+          "client_id": { "kind": "scalar", "type": "string", "nullable": true },
+          "resource": { "kind": "scalar", "type": "string", "nullable": true },
+          "authorize_params": {
+            "kind": "map",
+            "values": { "kind": "scalar", "type": "string" }
+          }
+        },
+        "token": {
+          "scheme": { "kind": "scalar", "type": "string" }
+        },
+        "headers": {
+          "headers": { "kind": "array", "items": { "kind": "ref", "ref": "CustomHeader" } }
+        },
+        "none": {}
+      }
+    },
+    "McpServerConfig": {
+      "kind": "tagged_union",
+      "tag": "transport",
+      "variants": {
+        "stdio": {
+          "id": { "kind": "scalar", "type": "string" },
+          "display_name": { "kind": "scalar", "type": "string" },
+          "description": { "kind": "scalar", "type": "string", "optional": true },
+          "command": { "kind": "scalar", "type": "string" },
+          "args": { "kind": "array", "items": { "kind": "scalar", "type": "string" } },
+          "env": { "kind": "map", "values": { "kind": "scalar", "type": "string" } },
+          "secret_env": { "kind": "array", "items": { "kind": "scalar", "type": "string" } }
+        },
+        "http": {
+          "id": { "kind": "scalar", "type": "string" },
+          "display_name": { "kind": "scalar", "type": "string" },
+          "description": { "kind": "scalar", "type": "string", "optional": true },
+          "url": { "kind": "scalar", "type": "string" },
+          "auth": { "kind": "ref", "ref": "HttpAuth" },
+          "request_headers": {
+            "kind": "map",
+            "values": { "kind": "scalar", "type": "string" }
+          }
+        }
+      }
+    }
+  }
+}
