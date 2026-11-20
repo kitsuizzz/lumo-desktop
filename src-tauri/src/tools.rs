@@ -20,8 +20,8 @@ pub mod result_store;
 use crate::account::{AccountId, ActiveAccount};
 use connector_state::{save_connector_state, ConnectorState};
 use connectors::{
-    build_mcp_connectors, BashConnector, FilesystemConnector, LuminanceConnector,
-    ProtonMailConnector,
+    build_mcp_connectors, BashConnector, BrowserConnector, FilesystemConnector,
+    LuminanceConnector, ProtonMailConnector,
 };
 use error::{AuthError, ConnectError};
 use log::{error, info, warn};
@@ -81,6 +81,7 @@ pub async fn swap_account(app_handle: &AppHandle, account: Option<AccountId>) {
                 let registry = app_handle.state::<ToolRegistry>();
                 registry.register(FilesystemConnector::from_settings(app_handle, &account));
                 registry.register(BashConnector::from_settings(app_handle, &account));
+                registry.register(BrowserConnector::new());
                 registry.register(proton_mail);
                 registry.register(luminance);
                 if crate::e2e_testing_enabled() {
