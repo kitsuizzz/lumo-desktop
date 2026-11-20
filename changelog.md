@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Fixed
+
+- Connectors: The `browser` connector is now registered at startup, matching the connector list in the README.
+
 ## [0.5.9]
 
 ### Security
