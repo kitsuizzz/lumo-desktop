@@ -377,6 +377,16 @@ mod tests {
     use super::*;
 
     #[test]
+    fn registers_fetch_and_navigate_without_credentials() {
+        let connector = BrowserConnector::new();
+        assert_eq!(connector.id(), "browser");
+        let names: Vec<String> = connector.tools().into_iter().map(|tool| tool.name).collect();
+        assert_eq!(names, vec!["fetch", "navigate"]);
+        assert!(matches!(connector.readiness(), Readiness::Ready));
+        assert!(matches!(connector.descriptor().auth, AuthMechanism::None));
+    }
+
+    #[test]
     fn html_to_text_strips_scripts_and_tags() {
         let html = r#"<!DOCTYPE html><html><head><title>T</title></head>
         <body><p>Hello</p><script>alert('x'); huge = "data";</script><style>.x{}</style></body></html>"#;
