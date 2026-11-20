@@ -9,7 +9,8 @@
     "dev": "tauri dev",
     "build:webview": "node scripts/build-webview.mjs",
     "icons:desktop": "node scripts/build-desktop-icons.mjs",
-    "typecheck": "tsc --noEmit -p webview"
+    "check:contract": "node scripts/check-connector-contract.mjs",
+    "typecheck": "tsc --noEmit -p webview && npm run --silent check:contract"
   },
   "devDependencies": {
     "@tauri-apps/cli": "^2.11.4",
