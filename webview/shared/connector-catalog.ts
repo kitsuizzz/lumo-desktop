@@ -81,6 +81,14 @@ export const BUILTIN_CONNECTORS: ConnectorCatalogEntry[] = [
     description: 'Run shell commands inside folders you allow on this device.',
   },
   {
+    id: 'browser',
+    category: 'device',
+    icon: '🌐',
+    iconSrc: 'images/connectors/browser.svg',
+    name: 'Browser',
+    description: 'Fetch and read web pages.',
+  },
+  {
     id: 'proton_mail',
     category: 'communication',
     icon: '✉️',
